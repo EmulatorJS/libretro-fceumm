@@ -4,6 +4,7 @@ STATIC_LINKING=0
 ENDIANNESS_DEFINES=
 SIGNED_CHAR=0
 HAVE_NTSC=1
+EMULATORJS_THREADS ?= 0
 
 SPACE :=
 SPACE := $(SPACE) $(SPACE)
@@ -429,6 +430,11 @@ else ifeq ($(platform), emscripten)
 	TARGET := $(TARGET_NAME)_libretro_$(platform).bc
 	STATIC_LINKING=1
 	EXTERNAL_ZLIB=1
+	ifeq ($(EMULATORJS_THREADS), 1)
+		LDFLAGS += -pthread
+		CFLAGS += -pthread
+		CXXFLAGS += -pthread
+	endif
 
 # GCW0
 else ifeq ($(platform), gcw0)
@@ -717,8 +723,13 @@ else
       CFLAGS     += -MT
       CXXFLAGS   += -MT
 	endif
-      CFLAGS     += -O2 -DNDEBUG
-      CXXFLAGS   += -O2 -DNDEBUG
+      ifeq ($(platform), emscripten)
+         CFLAGS     += -O3 -DNDEBUG
+         CXXFLAGS   += -O3 -DNDEBUG
+      else
+         CFLAGS     += -O2 -DNDEBUG
+         CXXFLAGS   += -O2 -DNDEBUG
+      endif
 endif
 
 ifneq ($(SANITIZER),)
